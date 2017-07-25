@@ -3,16 +3,32 @@
 package main
 
 import (
-	"fmt"
-	"strings"
-
-	"math/rand"
-	"time"
-
 	"bufio"
-
+	"fmt"
+	"log"
+	"math/rand"
 	"os"
+	"strings"
+	"time"
 )
+
+var f *os.File
+
+func init() {
+	var err error
+	f, err = os.Create("knockknock.log")
+	checkerror(err)
+}
+
+func checkerror(err error) bool {
+	if err != nil {
+		log.Println("FYI there is an error!", err)
+		return true
+	}
+	return false
+}
+
+
 
 func knock() {
 
@@ -20,7 +36,8 @@ func knock() {
 
 	fmt.Println("Hey, can you please tell me a knock knock joke?", "\n", "Start by typing knock knock or type Q at anytime to exit")
 
-	text, _ := reader.ReadString('\n')
+	text, err := reader.ReadString('\n')
+	checkerror(err)
 
 	text = strings.TrimSpace(text)
 
@@ -51,7 +68,10 @@ func knock() {
 
 		text = strings.TrimSpace(text)
 
-		if text == "Q" {
+		_, err := f.Write([]byte(text + "\n"))
+		checkerror(err)
+
+		if strings.ToUpper(text) == "Q" {
 			os.Exit(0)
 		} else {
 			fmt.Println(text, "who?")
@@ -59,15 +79,18 @@ func knock() {
 
 		text, _ = reader.ReadString('\n')
 
+		_, err = f.Write([]byte(text + "\n"))
+		checkerror(err)		
+
 		text = strings.TrimSpace(text)
 
-		if text == "Q" {
+		if strings.ToUpper(text) == "Q" {
 			os.Exit(0)
 		} else {
 			fmt.Println(text, "?", answers[rand.Intn(len(answers))])
 		}
 
-	} else if text == "Q" {
+	} else if strings.ToUpper(text) == "Q" {
 		os.Exit(0)
 
 	} else {
@@ -75,6 +98,9 @@ func knock() {
 		knock()
 
 	}
+
+	f.Close()
+
 }
 
 func main() {
